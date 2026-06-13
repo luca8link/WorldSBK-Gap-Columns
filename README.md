@@ -70,6 +70,12 @@ python scripts/make_icons.py
 
 This writes `icon16/32/48/128.png` from a single master design.
 
+## Support
+
+If you find this useful, you can buy me a coffee ☕
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/luca8link)
+
 ## License
 
 [MIT](LICENSE)
