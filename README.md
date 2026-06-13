@@ -59,22 +59,15 @@ Then build the generated project in Xcode. For local testing, enable **Allow uns
 
 No permissions are requested beyond a content-script match on a single domain. The extension reads the page DOM only and stores nothing.
 
-## Development
-
-Icons are generated from a small script:
-
-```bash
-pip install pillow
-python scripts/make_icons.py
-```
-
-This writes `icon16/32/48/128.png` from a single master design.
-
 ## Support
 
 If you find this useful, you can buy me a coffee ☕
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/luca8link)
+
+## Credits
+
+Icon: <a href="https://www.flaticon.com/free-icons/motorcycle" title="motorcycle icons">Motorcycle icons created by Freepik - Flaticon</a>
 
 ## License
 
