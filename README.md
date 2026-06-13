@@ -74,7 +74,7 @@ This writes `icon16/32/48/128.png` from a single master design.
 
 If you find this useful, you can buy me a coffee ☕
 
-[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/luca8link)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/luca8link)
 
 ## License
 
