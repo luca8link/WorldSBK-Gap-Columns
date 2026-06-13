@@ -6,7 +6,6 @@ const TABLE_SEL = "table.results-table__table";
 const TIME_HEAD = ".results-table__header-cell--time";
 const TIME_CELL = ".results-table__body-cell--time";
 const POS_CELL = ".results-table__body-cell--pos";
-const SESSION_SEL = ".results-filter-session"; // <select> (or wrapper) naming the session
 const TAG = "wsbk-col"; // marks cells we inject, so re-runs are idempotent
 
 // Championship points by finishing position.
@@ -20,28 +19,39 @@ const POINTS_SPRINT = {
   1: 12, 2: 10, 3: 9, 4: 7, 5: 6, 6: 5, 7: 4, 8: 3, 9: 2,
 };
 
-// Read the currently selected session label, e.g. "Race 1", "Superpole Race",
-// "Free Practice 2". Returns "" if not found.
-function currentSession() {
-  const node = document.querySelector(SESSION_SEL);
-  if (!node) return "";
-  const select = node.tagName === "SELECT" ? node : node.querySelector("select");
-  if (select && select.selectedOptions && select.selectedOptions.length) {
-    return select.selectedOptions[0].textContent.trim();
-  }
-  return (select || node).textContent.trim();
+// The session is identified by the LAST path segment of the URL (the site's
+// <select> does not reflect the active session, so we can't read it from there).
+//   .../sbk/001 -> Race 1   .../sbk/002 -> Superpole Race   .../sbk/003 -> Race 2
+//   .../sbk/l1a -> FP1, /q1a -> Superpole (qualifying), /w1a -> Warm Up, etc.
+const RACE_CODES = {
+  "001": POINTS_FULL,    // Race 1
+  "003": POINTS_FULL,    // Race 2
+  "002": POINTS_SPRINT,  // Superpole Race
+};
+
+function sessionCode() {
+  const seg = location.pathname.split("/").filter(Boolean).pop() || "";
+  return seg.toUpperCase();
 }
 
-// Decide which (if any) points table applies to the selected session.
-function pointsTableFor(session) {
-  if (!/race/i.test(session)) return null;          // not a race -> no points column
-  return /superpole/i.test(session) ? POINTS_SPRINT : POINTS_FULL;
+// Returns the points table for the current session, or null if it isn't a race.
+function pointsTableFor() {
+  const code = sessionCode();
+  if (RACE_CODES[code]) return RACE_CODES[code];
+  // Fallback: if the option label for this code mentions "Race", honour it
+  // (guards against the site changing codes). "Superpole" alone = qualifying.
+  const opt = document.querySelector(
+    'select[name="results-filter-session"] option[value="' + code + '"]'
+  );
+  const label = opt ? opt.textContent.trim() : "";
+  if (/race/i.test(label)) return /superpole/i.test(label) ? POINTS_SPRINT : POINTS_FULL;
+  return null;
 }
 
-// Parse a lap/gap string. Returns { v: seconds, rel: isGapToLeader } or null.
-//   "1'32.733"  -> { v: 92.733, rel: false }
-//   "+0.059"    -> { v: 0.059,  rel: true  }   (race pages: P1 absolute, rest relative)
-//   "44.812"    -> { v: 44.812, rel: false }
+// Parse a lap/total/gap string. Returns { v: seconds, rel: isGapToLeader } or null.
+//   "1'32.733"  -> { v: 92.733,  rel: false }   (lap or total race time)
+//   "32'46.379" -> { v: 1966.379, rel: false }
+//   "+0.059"    -> { v: 0.059,   rel: true  }   (some pages show gaps directly)
 //   "+1 Lap" / "DNF" / "" -> null
 function parseLap(raw) {
   let s = (raw || "").trim();
@@ -82,7 +92,7 @@ function enhance(table) {
   const timeHead = headRow && headRow.querySelector(TIME_HEAD);
   if (!timeHead) return;
 
-  const points = pointsTableFor(currentSession()); // null on practice/qualifying
+  const points = pointsTableFor(); // null on practice/qualifying/warm-up
   const isRace = points != null;
 
   // Headers: Gap 1st, Gap Prev, and (race only) Pts
@@ -90,7 +100,7 @@ function enhance(table) {
   if (isRace) headCells.push(th("Pts", "wsbk-points"));
   timeHead.after(...headCells);
 
-  let firstAbs = null;
+  let firstAbs = null; // leader's time (slowest-looking total in a race, fastest in practice)
   let prevAbs = null;
 
   table.querySelectorAll("tbody tr").forEach((row) => {
@@ -99,22 +109,26 @@ function enhance(table) {
 
     const p = parseLap(timeCell.textContent);
     let abs = null;
+    let valid = false;
     if (p) {
       abs = p.rel && firstAbs != null ? firstAbs + p.v : p.v;
-      if (firstAbs == null) firstAbs = abs;
+      if (firstAbs == null) firstAbs = abs; // first row = leader, defines the baseline
+      // A genuine finisher is never ahead of the leader's total time. Retired
+      // riders show a smaller partial time, so treat those as unclassified.
+      valid = abs >= firstAbs - 0.0005;
     }
 
-    const gapFirst = abs == null ? "–" : fmtGap(abs - firstAbs);
-    const gapPrev = abs == null ? "–" : prevAbs == null ? "–" : fmtGap(abs - prevAbs);
-    if (abs != null) prevAbs = abs;
+    const gapFirst = valid ? fmtGap(abs - firstAbs) : "–";
+    const gapPrev = valid ? (prevAbs == null ? "–" : fmtGap(abs - prevAbs)) : "–";
+    if (valid) prevAbs = abs;
 
     const cells = [td(gapFirst), td(gapPrev)];
 
     if (isRace) {
       const posCell = row.querySelector(POS_CELL);
       const pos = posCell ? parseInt(posCell.textContent.trim(), 10) : NaN;
-      // Classified finisher -> points (0 if outside the scoring range).
-      // Unclassified (DNF/DNS, no numeric position) -> "–".
+      // Classified position -> points (0 if outside the scoring range).
+      // No numeric position -> "–".
       const pts = Number.isInteger(pos) ? (points[pos] || 0) : "–";
       cells.push(td(String(pts), "wsbk-points"));
     }
@@ -134,7 +148,7 @@ function run() {
 
 observer = new MutationObserver(() => {
   clearTimeout(timer);
-  timer = setTimeout(run, 200); // debounce lazy-load / live-timing / filter churn
+  timer = setTimeout(run, 200); // debounce lazy-load / live-timing / nav churn
 });
 
 run();

@@ -18,7 +18,7 @@ It works on two table layouts:
 
 ### Championship points (race sessions only)
 
-When the selected session is a race, a **Pts** column is added with the points each rider scored, based on finishing position. The session is detected from the `.results-filter-session` selector, and the correct scale is chosen automatically:
+When the selected session is a race, a **Pts** column is added with the points each rider scored, based on finishing position. The session is identified from the URL's session code (`001` = Race 1, `002` = Superpole Race, `003` = Race 2), and the correct scale is chosen automatically:
 
 - **Race 1 / Race 2** — full scale, top 15 score: `25, 20, 16, 13, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1`
 - **Superpole Race** — sprint scale, top 9 score: `12, 10, 9, 7, 6, 5, 4, 3, 2`
