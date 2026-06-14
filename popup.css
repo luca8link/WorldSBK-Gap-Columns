@@ -12,6 +12,22 @@ body {
 .wsbk-popup__name { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.2; }
 .wsbk-popup__ver { margin: 3px 0 0; font-size: 12px; color: #6b6b6b; }
 .wsbk-popup__rule { border: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); margin: 13px 0; }
+.wsbk-popup__results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 11px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #c1121f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.wsbk-popup__results:hover { background: #a50f1a; }
+.wsbk-popup__results-icon { flex: none; }
 .wsbk-popup__blurb { margin: 0 0 11px; font-size: 12.5px; line-height: 1.5; color: #6b6b6b; }
 .wsbk-popup__bmc {
   display: flex;
