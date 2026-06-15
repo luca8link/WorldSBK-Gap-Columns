@@ -2,7 +2,7 @@
 
 An unofficial browser extension that enhances results **and standings** pages on [worldsbk.com](https://www.worldsbk.com): **gap** columns (to the leader and the rider ahead), **championship points** on race sessions, **points-gap** columns and a **leader-advantage** summary on the standings, and quick access to the official **Results** and **Standings** PDFs — so you can read everything at a glance.
 
-![Screenshot placeholder — drop a capture of an enhanced results page here](docs/screenshot.png)
+![Screenshot](docs/screenshot.png)
 
 ## What it does
 
@@ -26,6 +26,9 @@ When the selected session is a race, a **Pts** column is added with the points e
 Practice and qualifying sessions get no points column. Unclassified riders (DNF/DNS) show `–`.
 
 ### Championship standings
+
+![Screenshot](docs/standings.png)
+
 
 On a championship **standings** table the extension adds the same two gap columns, but measured in **points**: **Gap 1st** (points behind the leader) and **Gap Prev** (points behind the rider directly ahead), shown as a deficit such as `-94`. The leader shows `0`, and riders level on points show `0`.
 
